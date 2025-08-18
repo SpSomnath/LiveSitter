@@ -2,9 +2,9 @@ from pymongo import MongoClient
 from bson import ObjectId
 import os
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
-client = MongoClient(MONGO_URI)
+
+client = MongoClient("mongodb://localhost:27017", serverSelectionTimeoutMS=5000)
 db = client["rtsp_streams_db"]  # Database name
 streams_collection = db["streams"]  # Collection name
 
@@ -66,3 +66,11 @@ def delete_overlay(username):
     return result.deleted_count
 
 
+if __name__ == "__main__":
+    try:
+        # Try to list collections to test connection
+        print("Testing MongoDB connection...")
+        print("Collections:", db.list_collection_names())
+        print("Connection successful!")
+    except Exception as e:
+        print("MongoDB connection failed:", e)

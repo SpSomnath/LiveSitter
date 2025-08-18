@@ -3,17 +3,20 @@ import subprocess
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
+from mongodb import (
+    add_overlay,
+    get_overlay_by_username,
+    get_all_overlays,
+    update_overlay,
+    delete_overlay,
+)
+
 app = Flask(__name__, static_folder="streams")
 CORS(app)
 
 STREAMS_DIR = os.path.join(os.getcwd(), "streams")
-
-# Ensure the streams folder exists
 os.makedirs(STREAMS_DIR, exist_ok=True)
-
-# Store the FFmpeg process
 ffmpeg_process = None
-
 
 @app.route("/start_stream", methods=["POST"])
 def start_stream():
@@ -21,6 +24,8 @@ def start_stream():
 
     data = request.get_json()
     rtsp_url = data.get("rtsp_url")
+    username = data.get("username", "default")
+    element = data.get("element")
 
     if not rtsp_url:
         return jsonify({"error": "No RTSP URL provided"}), 400
@@ -29,7 +34,6 @@ def start_stream():
     if ffmpeg_process and ffmpeg_process.poll() is None:
         ffmpeg_process.terminate()
 
-    # FFmpeg command (your tested one)
     cmd = [
         "ffmpeg",
         "-fflags", "nobuffer",
@@ -50,18 +54,48 @@ def start_stream():
         os.path.join(STREAMS_DIR, "stream.m3u8")
     ]
 
-    # Run FFmpeg in background
     ffmpeg_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    hls_url = "/streams/stream.m3u8"
+    overlay_id = add_overlay(username, rtsp_url, hls_url, element)
 
     return jsonify({
         "message": "Streaming started",
-        "hls_url": "/streams/stream.m3u8"
+        "hls_url": hls_url,
+        "overlay_id": overlay_id
     })
-
 
 @app.route("/streams/<path:filename>")
 def serve_stream(filename):
     return send_from_directory(STREAMS_DIR, filename)
+
+# --- Overlay CRUD endpoints ---
+
+@app.route("/overlay/<username>", methods=["GET"])
+def api_get_overlay(username):
+    doc = get_overlay_by_username(username)
+    if not doc:
+        return jsonify({"error": "Not found"}), 404
+    doc["_id"] = str(doc["_id"])
+    return jsonify(doc)
+
+@app.route("/overlay", methods=["GET"])
+def api_get_all_overlays():
+    docs = get_all_overlays()
+    for doc in docs:
+        doc["_id"] = str(doc["_id"])
+    return jsonify(docs)
+
+@app.route("/overlay/<username>", methods=["PUT"])
+def api_update_overlay(username):
+    update_data = request.get_json()
+    count = update_overlay(username, update_data)
+    return jsonify({"modified_count": count})
+
+@app.route("/overlay/<username>", methods=["DELETE"])
+def api_delete_overlay(username):
+    count = delete_overlay(username)
+    return jsonify({"deleted_count": count})
 
 
 if __name__ == "__main__":
