@@ -71,32 +71,42 @@ def serve_stream(filename):
 
 # --- Overlay CRUD endpoints ---
 
+
 @app.route("/overlay/<username>", methods=["GET"])
 def api_get_overlay(username):
+    """Fetch overlay for a given username"""
     doc = get_overlay_by_username(username)
     if not doc:
         return jsonify({"error": "Not found"}), 404
-    doc["_id"] = str(doc["_id"])
+    doc["_id"] = str(doc["_id"])  # convert ObjectId to str
     return jsonify(doc)
 
-@app.route("/overlay", methods=["GET"])
-def api_get_all_overlays():
-    docs = get_all_overlays()
-    for doc in docs:
-        doc["_id"] = str(doc["_id"])
-    return jsonify(docs)
+@app.route("/overlay/<username>", methods=["POST"])
+def api_add_overlay(username):
+    """Save or update overlay settings"""
+    data = request.get_json()
+    rtsp_url = data.get("rtsp_url", "")
+    hls_url = data.get("hls_url", "")
+    element = data.get("element", None)
+
+    overlay_id = add_overlay(username, rtsp_url, hls_url, element)
+    return jsonify({"message": "Overlay saved", "overlay_id": overlay_id})
 
 @app.route("/overlay/<username>", methods=["PUT"])
 def api_update_overlay(username):
+    """Update overlay settings for user"""
     update_data = request.get_json()
     count = update_overlay(username, update_data)
     return jsonify({"modified_count": count})
 
 @app.route("/overlay/<username>", methods=["DELETE"])
 def api_delete_overlay(username):
+    """Delete overlay for a user"""
     count = delete_overlay(username)
     return jsonify({"deleted_count": count})
 
 
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    print("Registered routes:", app.url_map)
+    app.run(host="0.0.0.0", port=5001, debug=False)
