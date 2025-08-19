@@ -16,6 +16,7 @@ A full-stack application to stream **RTSP feeds** using **FFmpeg → HLS**, mana
 
 ---
 
+
 ## 🛠️ Tech Stack
 
 * **Backend:** Flask, FFmpeg, PyMongo
@@ -215,8 +216,15 @@ DELETE /overlay/<username>
 * Save button changes to **Update** after first save.
 
 ---
+## 📽 Demo Video
 
-## 📸 Demo
+<a href="https://drive.google.com/file/d/1ifiRUsKe4Fgy55OuEI6pjqYcv7_bXea8/view?usp=sharing" target="_blank">
+  <img src="https://github.com/SpSomnath/LiveSitter/blob/main/Img/Screenshot%202025-08-19%20at%2011.56.10%E2%80%AFAM.png" width="600" alt="Demo Video"/>
+</a>
+
+---
+
+## 📸 Demo Screenshot
 
 * **Landing page that take RTSP URL**
 ![Landing page](https://github.com/SpSomnath/LiveSitter/blob/main/Img/Screenshot%202025-08-19%20at%2011.55.33%E2%80%AFAM.png?raw=true)
@@ -230,8 +238,10 @@ DELETE /overlay/<username>
 ![Overlay Setting](https://github.com/SpSomnath/LiveSitter/blob/main/Img/Screenshot%202025-08-19%20at%2011.58.01%E2%80%AFAM.png?raw=true)
 
 
-
 ---
+
+
+
 
 ## 🧑‍💻 Author
 
